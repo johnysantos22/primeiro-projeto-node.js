@@ -1,78 +1,81 @@
-const express = require('express');
-const { v4 } = require('uuid');
-const cors = require('cors');
+const cors = require ("cors")
 
-const port = 3001;
-const app = express();
-app.use(express.json());
-app.use(cors());
+//express importado 
+const express = require ('express')
+
+// uuid importado
+const {v4} = require ("uuid")
+
+// express passa a ser chamado de app
+const app = express()
+const port = 3001
+app.use(express.json())
+app.use(cors())
 
 
+const users = []
 
-
-const users = [];
-
-const checkUserId = (request, response, next) => {
-    const { id } = request.params
-
-    const index = users.findIndex(user => user.id == id)
+const checkUserId = (req,res,next) => { 
+    const {id} = req.params
+    const index = users.findIndex(user => user.id === id)
 
     if (index < 0) {
-        return response.status(404).json({ error: "User not found" })
+        return res.status(404).json({
+            message: "user not found"
+        })
     }
 
-    request.userIdex = index 
-    request.UserId = id
+    req.userIndex = index
+    req.userId = id
 
     next()
+
 }
 
-
-app.get('/users', (request, response) => {
-    return response.json(users)
-})
-
-app.post('/users', (request, response) => {
-    const { name, age } = request.body
-
-
-    const user = { id: uuid.v4(), name, age }
-
-    users.push(user)
-
-    return response.status(201).json(user)
-})
-
-
-app.put('/users/:id', checkUserId, (request, response) => {
+app.get('/users', (req, res) => { // get rota criada
     
-    const { name, age } = request.body
-    const index = request.userIdex
-    const id = request.UserId
-
-    const updatedUser = { id, name, age }
-
-    users[index] = updatedUser
+    return res.json(users)
+    })
 
 
-    return response.json(updatedUser)
+    //usando body params
+app.post('/users', (req, res) => { // post rota criada
+
+            const {name, age} = req.body
+           
+            const user = {id:v4(),name , age}
+
+            users.push(user)
+
+        return res.status(201).json(user)
+    })
+
+    //usando route params
+app.put('/users/:id', checkUserId, (req, res) => { // post rota criada
+
+    const index = req.userIndex
+    const id = req.userId
+    
+    const {name, age} = req.body
+    
+    const updadtedUser = {id, name, age}
+
+    users[index] = updadtedUser
+
+    return res.json(updadtedUser)
 })
 
-app.delete('/users/:id', checkUserId,  (request, response) => {
+app.delete('/users/:id', checkUserId, (req, res) => { // delete rota criada
 
+    const index = req.userIndex
 
-    const index = request.userIdex
+    users.splice(index,1)
 
-    users.splice(index, 1)
-
-
-    return response.status(204).json()
+    return res.status(204).json()
 })
 
 
-
+//porta que está rodando
 app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`)
+    console.log(`${port} inquebrável 🎇`)
 })
-
-
