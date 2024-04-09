@@ -1,94 +1,82 @@
-const express = require('express')
-const uuid = require('uuid')
-const cors =require('cors')
+const cors = require ("cors")
+
+//express importado 
+const express = require ('express')
+
+// uuid importado
+const {v4} = require ("uuid")
 
 
-const port = 3001
+// express passa a ser chamado de app
 const app = express()
+const port = 3001
 app.use(express.json())
 app.use(cors())
 
-const orderHamburger = []
 
-const checkOrderId = (request, response, next) => {
-    const { id } = request.params
+const users = []
 
-    const index = orderHamburger.findIndex(order => order.id === id)
+const checkUserId = (req,res,next) => { 
+    const {id} = req.params
+    const index = users.findIndex(user => user.id === id)
 
     if (index < 0) {
-        return response.status(400).json({ message: "Order not found" })
+        return res.status(404).json({
+            message: "user not found"
+        })
     }
 
-    request.orderIndex = index
-    request.orderId = id
+    req.userIndex = index
+    req.userId = id
 
     next()
+
 }
 
+app.get('/order', (req, res) => { // get rota criada
+    
+    return res.json(users)
+    })
 
 
-app.post('/order', (request, response) => {
+    //usando body params
+app.post('/order', (req, res) => { // post rota criada
 
-    const { order, clientName, price, name, pedido } = request.body
+            const {name, age} = req.body
+           
+            const user = {id:v4(),name , age}
 
-    const NewClient = { id: uuid.v4(), order, clientName, price, name, pedido, status: "Pedido Aceito" }
+            users.push(user)
 
-    orderHamburger.push(NewClient)
+        return res.status(201).json(user)
+    })
 
-    return response.status(201).json(NewClient)
+    //usando route params
+app.put('/order/:id', checkUserId, (req, res) => { // post rota criada
 
+    const index = req.userIndex
+    const id = req.userId
+    
+    const {name, age} = req.body
+    
+    const updadtedUser = {id, name, age}
+
+    users[index] = updadtedUser
+
+    return res.json(updadtedUser)
 })
 
-app.get('/order', (request, response) => {
+app.delete('/order/:id', checkUserId, (req, res) => { // delete rota criada
 
-    return response.status(200).json(orderHamburger)
+    const index = req.userIndex
+
+    users.splice(index,1)
+
+    return res.status(204).json()
 })
 
-app.put('/order/:id', checkOrderId, (request, response) => {
 
-    const index = request.orderIndex
-    const id = request.orderId
-
-    const { order, clientName, price } = request.body
-
-    const updatedOrder = { id: uuid.v4(), order, clientName, price, status: "Em Preparação" }
-
-    orderHamburger[index] = updatedOrder
-
-    return response.status(202).json(updatedOrder)
-
-})
-
-app.delete('/order/:id', checkOrderId, (request, response) => {
-
-    const index = request.orderIndex
-    const id = request.orderId
-
-    orderHamburger.splice(index, 1)
-    return response.status(204).json(orderHamburger)
-
-})
-
-app.get('/order/:id', checkOrderId, (request, response) => {
-
-    const index = request.orderIndex
-
-    return response.status(205).json(orderHamburger[index])
-
-})
-
-app.patch('/order/:id', checkOrderId, (request, response) => {
-
-    const index = request.orderIndex
-
-    const newStatus = { ...orderHamburger[index], status: "Pedido Pronto" }
-
-    orderHamburger[index] = newStatus
-
-    return response.status(210).json(newStatus)
-
-})
-
+//porta que está rodando
 app.listen(port, () => {
-    console.log(`servidor rodando na porta ${port}`)
+    console.log(`${port} inquebrável 🎇`)
 })
